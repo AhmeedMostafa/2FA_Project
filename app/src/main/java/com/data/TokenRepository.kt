@@ -1,6 +1,6 @@
-package com.example.a2faproject.data
+package com.data
 
-import com.example.authenticator.model.Token
+import com.model.Token
 import kotlinx.coroutines.flow.Flow
 
 class TokenRepository(private val tokenDao: TokenDao) {

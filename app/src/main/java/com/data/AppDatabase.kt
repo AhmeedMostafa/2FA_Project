@@ -1,10 +1,29 @@
-package com.example.a2faproject.data
+package com.data
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.authenticator.model.Token
+import com.model.Token
 
-@Database(entities = [Token::class], version = 1)
+@Database(entities = [Token::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun tokenDao(): TokenDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getDatabase(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "authenticator_database"
+                ).build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
 }

@@ -58,12 +58,24 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    // Room Database
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")
+
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+
+    // Lifecycle & ViewModel
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+
+    // Navigation Compose
+    implementation("androidx.navigation:navigation-compose:2.8.4")
+
+    // Material Icons Extended (for QrCodeScanner, etc.)
+    implementation("androidx.compose.material:material-icons-extended")
 
     // Apache Commons (For Base32 decoding required by TOTP)
     implementation("commons-codec:commons-codec:1.15")

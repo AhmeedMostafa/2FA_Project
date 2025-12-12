@@ -1,10 +1,10 @@
-package com.example.a2faproject.data
+package com.data
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import com.example.authenticator.model.Token
+import com.model.Token
 import kotlinx.coroutines.flow.Flow
 
 @Dao
