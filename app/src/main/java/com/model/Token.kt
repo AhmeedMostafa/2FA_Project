@@ -1,4 +1,4 @@
-package com.model
+package com.example.authenticator.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

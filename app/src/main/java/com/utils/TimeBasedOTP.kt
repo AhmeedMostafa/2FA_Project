@@ -1,4 +1,4 @@
-package com.utils
+package com.example.a2faproject.utils
 
 import org.apache.commons.codec.binary.Base32
 import java.nio.ByteBuffer
