@@ -1,0 +1,27 @@
+# --- Android Studio & Gradle ---
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+
+# --- Flutter (Required for your Flutter Module) ---
+.flutter-plugins
+.flutter-plugins-dependencies
+.dart_tool/
+.pub-cache/
+.pub/
+/flutter_module/.pub/
+/flutter_module/build/
+/flutter_module/.dart_tool/
+
+# --- Security ---
+*.jks
+*.keystore
