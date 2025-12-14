@@ -138,6 +138,22 @@ fun AppNavHost(
             }
         }
         // ==========================================
+            TokenListScreen(
+                viewModel = viewModel,
+                onNavigateToAddToken = {
+                    navController.navigate(Screen.AddToken.route)
+                },
+                onNavigateToScanner = {
+                    // Placeholder for Member 3's QR scanner
+                    // navController.navigate(Screen.Scanner.route)
+                    Toast.makeText(
+                        context,
+                        "QR Scanner coming soon (Member 3's task)",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            )
+        }
 
         composable(Screen.AddToken.route) {
             AddTokenScreen(
@@ -174,5 +190,10 @@ fun launchQrScanner(context: android.content.Context) {
         context.startActivity(launchIntent)
     } else {
         android.widget.Toast.makeText(context, "Error happened", android.widget.Toast.LENGTH_SHORT).show()
+        // Placeholder for Member 3's scanner screen
+        composable(Screen.Scanner.route) {
+            // ScannerScreen will be implemented by Member 3
+            // For now, this is a placeholder
+        }
     }
 }
