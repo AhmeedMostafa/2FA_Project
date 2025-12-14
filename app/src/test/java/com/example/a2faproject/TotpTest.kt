@@ -1,6 +1,6 @@
 package com.example.a2faproject
 
-import com.example.a2faproject.utils.TimeBasedOTP
+import com.utils.TimeBasedOTP
 import org.junit.Test
 import org.junit.Assert.*
 

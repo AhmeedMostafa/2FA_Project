@@ -13,8 +13,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.UUID
 
-class TokenViewModel(private val repository: TokenRepository) : ViewModel() {
+class TokenViewModel(
+    private val repository: TokenRepository,
+    private val startTicker: Boolean = true,
+    private val tickDelayMs: Long = 1000L
+) : ViewModel() {
 
     // All tokens from database
     val allTokens: StateFlow<List<Token>> = repository.allTokens
@@ -33,25 +38,39 @@ class TokenViewModel(private val repository: TokenRepository) : ViewModel() {
     val otpCodes: StateFlow<Map<Int, String>> = _otpCodes.asStateFlow()
 
     init {
-        // Start the countdown timer
-        viewModelScope.launch {
-            while (true) {
-                val remaining = calculateTimeRemaining()
-                _timeRemaining.value = remaining
+        if (startTicker) {
+            // Start the countdown timer
+            viewModelScope.launch {
+                while (true) {
+                    val remaining = calculateTimeRemaining()
+                    _timeRemaining.value = remaining
 
-                // Regenerate codes when timer resets
-                if (remaining == 30 || _otpCodes.value.isEmpty()) {
-                    regenerateAllCodes()
+                    // Regenerate codes when timer resets
+                    if (remaining == 30 || _otpCodes.value.isEmpty()) {
+                        regenerateAllCodes()
+                    }
+
+                    delay(tickDelayMs)
                 }
-
-                delay(1000L)
             }
         }
 
         // Observe tokens and generate codes for new ones
         viewModelScope.launch {
             allTokens.collect { tokens ->
+                ensureRemoteIds(tokens)
                 regenerateCodesForTokens(tokens)
+            }
+        }
+    }
+
+    private fun ensureRemoteIds(tokens: List<Token>) {
+        val tokensMissingRemoteId = tokens.filter { it.remoteId.isBlank() }
+        if (tokensMissingRemoteId.isEmpty()) return
+
+        viewModelScope.launch {
+            for (token in tokensMissingRemoteId) {
+                repository.update(token.copy(remoteId = UUID.randomUUID().toString()))
             }
         }
     }
@@ -80,11 +99,23 @@ class TokenViewModel(private val repository: TokenRepository) : ViewModel() {
     fun addToken(issuer: String, accountName: String, secretKey: String) {
         viewModelScope.launch {
             val token = Token(
+                remoteId = UUID.randomUUID().toString(),
                 issuer = issuer,
                 accountName = accountName,
                 secretKey = secretKey.trim().replace(" ", "").uppercase()
             )
             repository.insert(token)
+        }
+    }
+
+    fun updateToken(token: Token, issuer: String, accountName: String, secretKey: String) {
+        viewModelScope.launch {
+            val updated = token.copy(
+                issuer = issuer.trim(),
+                accountName = accountName.trim(),
+                secretKey = secretKey.trim().replace(" ", "").uppercase()
+            )
+            repository.update(updated)
         }
     }
 
@@ -94,12 +125,24 @@ class TokenViewModel(private val repository: TokenRepository) : ViewModel() {
         }
     }
 
+    fun syncFromCloud(uid: String, isAnonymous: Boolean) {
+        viewModelScope.launch {
+            repository.syncFromCloud(uid, isAnonymous)
+        }
+    }
+
+    fun clearLocalTokens() {
+        viewModelScope.launch {
+            repository.clearLocalTokens()
+        }
+    }
+
     // Factory for creating ViewModel with Repository
     class Factory(private val repository: TokenRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(TokenViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return TokenViewModel(repository) as T
+                return TokenViewModel(repository = repository) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

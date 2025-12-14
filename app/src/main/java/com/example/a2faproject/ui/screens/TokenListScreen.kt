@@ -18,7 +18,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material3.AlertDialog
@@ -59,12 +62,17 @@ fun TokenListScreen(
     viewModel: TokenViewModel,
     onNavigateToAddToken: () -> Unit,
     onNavigateToScanner: () -> Unit,
+    onEditToken: (Int) -> Unit,
+    isDarkMode: Boolean = false,
+    onToggleDarkMode: () -> Unit = {},
+    onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val tokens by viewModel.allTokens.collectAsState()
     val timeRemaining by viewModel.timeRemaining.collectAsState()
     val otpCodes by viewModel.otpCodes.collectAsState()
 
+    var tokenForActions by remember { mutableStateOf<Token?>(null) }
     var tokenToDelete by remember { mutableStateOf<Token?>(null) }
     val clipboardManager = LocalClipboardManager.current
 
@@ -75,7 +83,10 @@ fun TokenListScreen(
         topBar = {
             AuthenticatorTopBar(
                 scrollBehavior = scrollBehavior,
-                onScanClick = onNavigateToScanner
+                onScanClick = onNavigateToScanner,
+                isDarkMode = isDarkMode,
+                onToggleDarkMode = onToggleDarkMode,
+                onLogout = onLogout
             )
         },
         floatingActionButton = {
@@ -143,7 +154,7 @@ fun TokenListScreen(
                                 clipboardManager.setText(AnnotatedString(code))
                             },
                             onLongClick = {
-                                tokenToDelete = token
+                                tokenForActions = token
                             }
                         )
                     }
@@ -170,13 +181,45 @@ fun TokenListScreen(
             }
         )
     }
+
+    // Actions dialog (Edit / Delete)
+    tokenForActions?.let { token ->
+        AlertDialog(
+            onDismissRequest = { tokenForActions = null },
+            title = { Text("Account Options", fontWeight = FontWeight.SemiBold) },
+            text = { Text("Choose an action for ${token.issuer} (${token.accountName}).") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        tokenForActions = null
+                        onEditToken(token.id)
+                    }
+                ) {
+                    Text("Edit")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        tokenForActions = null
+                        tokenToDelete = token
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AuthenticatorTopBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    onScanClick: () -> Unit
+    onScanClick: () -> Unit,
+    isDarkMode: Boolean,
+    onToggleDarkMode: () -> Unit,
+    onLogout: () -> Unit
 ) {
     LargeTopAppBar(
         title = {
@@ -189,11 +232,25 @@ private fun AuthenticatorTopBar(
             }
         },
         actions = {
+            IconButton(onClick = onToggleDarkMode) {
+                Icon(
+                    imageVector = if (isDarkMode) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                    contentDescription = if (isDarkMode) "Switch to Light Mode" else "Switch to Dark Mode",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             IconButton(onClick = onScanClick) {
                 Icon(
                     imageVector = Icons.Outlined.QrCodeScanner,
                     contentDescription = "Scan QR Code",
                     tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            IconButton(onClick = onLogout) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Logout,
+                    contentDescription = "Log out",
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         },
