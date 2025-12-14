@@ -24,6 +24,18 @@ import com.example.a2faproject.ui.screens.TokenListScreen
 import com.example.a2faproject.ui.theme._2FAProjectTheme
 import com.example.a2faproject.viewmodel.TokenViewModel
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,6 +111,33 @@ fun AppNavHost(
         }
     ) {
         composable(Screen.TokenList.route) {
+            Box(modifier = Modifier.fillMaxSize()) {
+
+                TokenListScreen(
+                    viewModel = viewModel,
+                    onNavigateToAddToken = {
+                        navController.navigate(Screen.AddToken.route)
+                    },
+                    onNavigateToScanner = {
+                        launchQrScanner(context)
+                    }
+                )
+
+                FloatingActionButton(
+                    onClick = {
+                        launchFlutterApp(context)
+                    },
+                    containerColor = Color(0xFF3B82F6),
+                    contentColor = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(20.dp)
+                ) {
+                    Icon(Icons.Default.Security, contentDescription = "Check Password")
+                }
+            }
+        }
+        // ==========================================
             TokenListScreen(
                 viewModel = viewModel,
                 onNavigateToAddToken = {
@@ -125,6 +164,32 @@ fun AppNavHost(
             )
         }
 
+        composable(Screen.Scanner.route) {
+            // ScannerScreen placeholder
+        }
+    }
+}
+
+fun launchFlutterApp(context: android.content.Context) {
+    val flutterPackageName = "com.example.flutter_password_app"
+
+    val launchIntent = context.packageManager.getLaunchIntentForPackage(flutterPackageName)
+
+    if (launchIntent != null) {
+        context.startActivity(launchIntent)
+    } else {
+        android.widget.Toast.makeText(context, "Error happened", android.widget.Toast.LENGTH_SHORT).show()
+    }
+}
+
+fun launchQrScanner(context: android.content.Context) {
+    val scannerPackageName = "com.example.flutter_qr_scanner"
+    val launchIntent = context.packageManager.getLaunchIntentForPackage(scannerPackageName)
+
+    if (launchIntent != null) {
+        context.startActivity(launchIntent)
+    } else {
+        android.widget.Toast.makeText(context, "Error happened", android.widget.Toast.LENGTH_SHORT).show()
         // Placeholder for Member 3's scanner screen
         composable(Screen.Scanner.route) {
             // ScannerScreen will be implemented by Member 3
